@@ -1,0 +1,946 @@
+                                         **** YAML ****
+# what is YAML (“YAML Ain’t Markup Language.”) ?
+
+> YAML stands for “YAML Ain’t Markup Language.” its human redable thats why we using (json can also we be use in k8s).we use camel casing in k8s (aA) manifest file .It is a human-readable.
+  data serialization format mainly used for writing configuration files.its case sensetive or its also call declerative format or its key value format .
+
+{ only few think to write in yaml 
+ (1)english (key)
+ (2): colun (Symbols like)
+ (3)_   (Symbols like)
+ (4) space ((indentation))
+ (5) "@" special caracter
+                           }
+# LINUX some command for networking in k8s
+(1)ps aux (show all running processes on the system.)
+(2)pstree (its giving hirerchy structure)
+(3)base64 its use for kubernetes secret in (cmd >echo yasin |base64 >output eWFzaW4K or decode > echo  eWFzaW4K |base64 -d > output yasin)
+(4)tcpdump It is used to capture and analyze network traffic (packets) in real time. (tcpdump -C 10 > 1.txt )only 10 packet will be captured)
+(5)crictl is a command-line tool that use communicates directly with the Kubernetes container runtime like containerd (cmd > crictl ps -a :its give the container id which is run on pod)
+(6) journalctl is a command to view system and service logs on Linux using systemd.(journalctl Linux me systemd ke logs dekhne ke liye use hota hai. systemd hi sari service run karta hai linux me :path /etc/systemd me stored hota h)
+  > journalct --no-pager > logs.txt or journalctl --since-yesterday -o json-pretty. he gives the log of the system from yesterday
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+                             **** Kubernetes Architecture **** 
+# what is api (An API is a set of rules that allows two applications to communicate with each other.)
+# HTTP/1.1 is a web protocol that allows browsers and servers to communicate and transfer data over the internet. (json/xml)
+# gRPC is a high-performance framework for fast communication between microservices using HTTP/2. (in kubernetes evry protcol talk in grpc exp api-server to communicate with etcd and we talk with api-server in rest protocol)
+
+                  **** MASTER PLANE ****
+1# kube api-server
+(1)Authentication: Authentication verifies who you are before allowing access to the API server. we can use berar toke for ping for cluster
+(2)Authorization: Authorization decides what actions an authenticated user is allowed to perform.in the cluster (RBAC)
+(3)Admission-controller: An Admission Controller (1)validates or(2) mutating requests before they are persisted by the API server. (• Validating Admission Controller: Rule check karta hai and  • Mutating Admission Controller: Request ko modify karta hai)
+# all controle palin component run as static pod > cd /etc/kubernetes/mainfests 
+2#etcd is a distributed key-value store that keeps Kubernetes cluster configuration and state reliably.
+1️⃣ Kubernetes API Server sends data to etcd
+2️⃣ The data is encoded using Protocol Buffers (Protobuf) (Protocol Buffers (Protobuf) ek data serialization format hai jo fast, compact aur efficient hota hai — aur etcd me isi ka use hota hai data ko store aur transfer karne ke liye.)
+3️⃣ The data is replicated from leader to followers using Raft
+4️⃣ The data is persisted in etcd (WAL + storage)
+5 data not encrypted in etcd
+3#The kube-scheduler assigns Pods to the most suitable Nodes based on resource availability and constraints.
+4# The kube-controller-manager runs controllers that continuously ensure the cluster’s actual state matches the desired state.
+
+                         **** WORKER PLANE ****
+(1)kubeproxy:run as deamon-set and its mapping ip to the pod.• kube-proxy manages network rules on each node so Pods can communicate with Services inside the cluster.
+(2)kubelet; run as deamon-set or its communicate to api-server.kubelet runs on each node and makes sure the containers defined in Pod specs are running and healthy.It works with the container runtime to start, stop, and monitor containers.
+# How CNI assigns an IP to a Pod (Step-by-step).
+Real CNI plugin examples:
+• Calico
+• Flannel
+• Cilium
+
+• When a Pod is created, kubelet calls the CNI plugin.
+• The CNI plugin picks a free IP address from the cluster’s IP pool.
+• It assigns this IP inside the Pod’s network namespace.
+• A veth pair is created to connect the Pod to the node network.
+• Now the Pod gets a unique IP address.
+• Using this IP, the Pod can communicate with other Pods and Services.
+What is CRI?
+
+• CRI is a runtime interface that lets Kubernetes talk to container runtimes.container high level container-run time is called to run and run will be create container
+• It connects kubelet with the container runtime to run containers.
+
+#How CRI works (simple flow):
+
+• Kubernetes (kubelet) sends a request via CRI.
+• The container runtime (like containerd or CRI-O) receives the request.
+• The runtime pulls images, creates containers, starts/stops them, and reports status back.
+What is CSI?
+
+• CSI is a storage interface that lets Kubernetes talk to storage systems.
+• It allows you to attach external storage to Pods.
+
+#How CSI works (simple flow):
+
+• A Pod requests storage using a PersistentVolumeClaim (PVC).
+• Kubernetes calls the CSI driver.
+• The CSI driver talks to the storage provider and creates/attaches a volume.
+• The volume is mounted inside the Pod.
+• Now the Pod can read/write persistent data.
+#runC is a low-level container runtime that actually starts containers on the host.runC is the low-level runtime that actually runs containers on the OS.
+#cgroup:It controls CPU, memory, disk I/O, and network for containers and processes.
+• Containers use cgroups to make sure one container doesn’t eat all the resources.
+*workflow how to container launch
+[pod] kubelet → CRI → runtime → pull image → runC → cgroups → container run
+
+ ##kublet workflow
+> calls to CRI take care of container > configure the cgroup > kublet configure the pod networking to call CNI > kublet pull > run the container > run application
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+day=3
+#Type of cluster (1) cloud base (gke,eks,aks) (2)kind cluster (3)minkube
+# what is Cluster = multiple servers connected together
+👉 “A cluster is a collection of nodes working together to manage and run applications as a unified system.”
+# what is image (dockerfile) 👉 “A container image is a lightweight, standalone, and executable package that contains everything needed to run an application, including code, runtime, libraries, and dependencies.”
+#🔹 What is a Distroless Image? 👉 A Distroless image is a container image that contains only your application and its required runtime, and nothing else (no shell, no package manager, no extra OS tools).
+# what is distroless image .👉 A distroless image contains only the application and its dependencies, without OS tools, making it smaller and more secure.”
+# what is kubectl 👉 “kubectl is a command-line tool used to interact with and manage a Kubernetes cluster.”
+# what is pod . 👉 In Kubernetes (K8s), a Pod is the smallest deployable unit.
+👉 “A Pod is the smallest deployable unit in Kubernetes that runs one or more containers with shared network and storage.”
+cmd 
+(1) - kubectl api-resources > we can check the (👉 SHORTNAMES, APIVERSION,the object are NAMESPACED or not in k8s,KIND which type of object exp pod,deployment this are type of kind.)
+(2)kubectl create pod1 --image=nginx --sleep 1d (👉 it will be create pod and pod name is pod1 image is nginx sleep 1d.)
+(3)kubectl get pods (👉 its show the list of the running pod.)
+(4)kubectl describe pod pod1 (👉 this command show the full details of the pod.)
+(5)kubectl get pod -owide (👉 This command is used to list all Pods with extra detailed information.)
+(6)kubectl edit pod pod1 (👉 This command is used to edit the configuration of a running Pod (pod1) directly from the terminal and open in vim eidter.)
+(7)kubectl apply -f new-pod.yaml ( (👉 this command use yaml file to create object in k8s.)
+(8)kubectl delet -f new-pod.yaml ((👉 we can delete the pod using the file name.)
+(9)kubectl exec -it pod1 --bin/bash (👉 “kubectl exec -it pod1 is used to execute commands inside a running Pod. The -it flags provide an interactive terminal.")
+(10)kubectl run my-pod --image=nginx --dry-run=CLIENT -OYAML > POD1.yaml (👉 “kubectl run my-pod --image=nginx --dry-run is used to simulate Pod creation. It validates the command without creating the Pod. In newer versions, we use --dry-run=client -o yaml to generate the Pod configuration.”)
+(11)kubectl get pod/mypod -oyaml > 1.yaml (👉 This command is used to export the full YAML configuration of an existing Pod (mypod) into a file.0
+#Ephemeral Container or debug container(Kubernetes). 👉 An ephemeral container is a temporary debugging container that you can add to a running Pod in Kubernetes ephimeral container cant be delete.
+(12) kubectl debug pod1 -it --image=nginx --targer=pod1. (add ephimeral container )
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+day4 #tool
+#what is trivy its part of security(👉 Trivy is an open-source security scanning tool used to detect vulnerabilities, misconfigurations, and secrets in container images, file systems, and Kubernetes environments.")
+(1)trivy image hello-world --severity CRITICAL
+🔐 What is Kyverno? (👉Kyverno is a policy management tool for Kubernetes that helps you control, validate, and secure your cluster using rules (policies).
+🧪 What Kyverno can do? (its part of security.this tool use for cluster ploicy)
+✅ Validate (check rules)
+🔄 Mutate (modify configs automatically,but in the production we use not mutating policy. we only use validating policy)
+🔐 Generate (create resources like NetworkPolicy)
+📊 Audit (report violations)
+*we install kyeverno tool using Helm
+(2)kubectl get policy report
+#A PolicyReport shows the result of policies applied to your cluster.
+
+👉 It tells you:
+
+Which resources passed ✅
+Which failed ❌
+Which were skipped ⚠️
+# kube linter (KubeLinter is a static analysis tool for Kubernetes YAML files.
+It checks your manifests (Pods, Deployments, etc.) for security issues and best practice violations before you deploy them.its give the prduction level yaml)
+(3)kube-linter lint deployment.yaml
+# what is static pod ? (static pod manage by kubelet and other pod manage by kube-api server)
+A Static Pod is a pod that is directly managed by the kubelet, not by the Kubernetes API Server.
+ 👉 * 429 error is to many request
+👉 This means:
+*path > cd /etc/kubernetes/manifests(all master node component run as a static pod .etcd.yaml  kube-apiserver.yaml  kube-controller-manager.yaml  kube-scheduler.yaml)
+*path of the kubelet > cd /var/lib/kubelet (only importent file int his location config.yaml > cat config.yaml |grep staticpod)
+It is created from a local file on the node
+It does not depend on kubectl apply
+The kubelet automatically monitors and restarts it
+# 🔹 What is a DaemonSet in Kubernetes? (A DaemonSet ensures that a copy of a Pod runs on every node (or selected nodes) in your cluster.prometheus pod also run as deamon set)
+#what is init container ? 
+ 👉 An Init Container is a container that runs before the main application container and completes its task before the main container starts.its help for applicaion container to run the application .exp secret mainly use for fetch the password for run
+📊 Example Scenario
+
+👉 Your app needs database connection:
+
+Init container checks DB is ready
+Once ready → main app starts
+
+👉 what is sidecar container:A helper container that runs next to your main app to provide extra features like logging, security, monitoring, or networking — without changing your app code.
+#what is replicaset (A ReplicaSet in Kubernetes ensures that a specified number of identical Pod replicas are running at all times.we can hetrogenius pod in replicaset but in the production we used deployment)
+#what is deployment and why use in production
+In production, we use Deployments because they support rolling updates, rollbacks, self-healing, and scaling. We can release new versions gradually, strategy perform canary or blue-green deployments, and quickly roll back if an issue occurs. That's why Deployments are the standard way to manage applications in Kubernetes.genraly we in the production canary we use or we need 0 down time to we go with rollout.(rolling rollout ka mtlb ek version se dusre version me jana phir se purane version par ana ye feature hai k8s me)
+**maxSurge defines the maximum number of extra Pods that can be created during a rolling update. It helps Kubernetes start new Pods before terminating old ones, ensuring high availability and zero or minimal downtime.(rolling update karte time kitna extra pod rahega taki downtime na aye.by default deplyment me rolling update strtegy hoti h or jub bhi rollout karte hai to ek revison number assign 1 hoti hai jitne bare karenge)
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: nginx-deployment
+
+spec:
+  replicas: 5
+
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+
+  selector:
+    matchLabels:
+      app: nginx
+
+  template:
+    metadata:
+      labels:
+        app: nginx
+
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.27
+        ports:
+        - containerPort: 80
+# if u want to rollout version:1.14.1 to version:1.16.1 > kubectl set image deployment/my-deply nginx=nginx:1.16.1 --record=true(other wise u go and change in to yaml file of deployment)
+#if u want check history of rollut of the deployment > kubectl rollout history deployment my-deply
+# if u want to rollback to previous version > kubectl rollout undo deployment/nginx-deployment --to-revision=1(jab tak deployment new pod nhi banata h jub tak purane pod delete nhi karta h)
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+day 6 Services
+#probelm with deployment deployment create replicaset or pod but its desont have public ip for the application can be acces by the user .
+So your app is running, but:
+❌ No external/public access
+❌ No browser access
+❌ No public IP
+# A Service in Kubernetes is an object that exposes your application (Pods) so it can be accessed reliably.(mtlb hum humare application ko live karna chate hai to through the service hum kar skte hai hum deplyment banayenge or usko service se bind kar denge through the label)
+** types of service in k8s
+1)“ClusterIP is a Service type that provides an internal IP address to access Pods within the Kubernetes cluster, but it is not accessible from outside.”(cluster ke anadr sirf acees hoga ye default hota hai)
+2)“LoadBalancer (ye sirf cloud base cluster k liye hota h but 95% loadbalncer type use nhi karti company ingress use karte h)is a Kubernetes Service type that exposes an application externally using a public IP and distributes traffic across multiple Pods.”basically is used for cloud infra of kubernetes.
+3)NodePort is a Service type that exposes your application on a fixed port of each node, so you can access it from outside the cluster using the Node IP. baicaly we note use in production he open the port of all node hacker can be access of that port
+4)A Headless Service is a Service without a ClusterIP that exposes Pods directly instead of providing a single stable IP..basically use for databses
+5)ExternalName is a Service type used to connect your Kubernetes application to an external service using a DNS name.its devolper orinted rerlly use this srvice type.
+#how to implement the service in k8s.end point slice using to implement the all type of service.
+1)An Endpoint(endpoint basically pod ka ip hota hai) in Kubernetes is an object that stores the actual IP addresses and ports of Pods behind a Service.(end point ka kaam ye tha ki jitne bhi pod dead honge use endpoint se nikale phir uski jagah new endpoint pod ka banyega . to iske wajah se cpu par load jyada ata tha to ise depricate kardiya.
+2) EndpointSlice is a Kubernetes object that stores the IP addresses and ports of Pods behind a Service, just like Endpoints — but in a more scalable and efficient way.(endpoint slice ka kaam ye ki jitne bhi endpoint slice me se pod jitne dead honge to wo new endpoint slice banyega naki usi me pod ko add karega new banyega or  usme add karega. to ise cpu par load nhi ata hai ,)
+3)Endpoints / EndpointSlice automatically bante hain jab aap Service create karte ho. > kubectl get endpoint slice to tume yaha ip dikhegi jo pod ki ip hogi deployment se create karoge jo.
+# port in services.
+1)nodeport > means node ki port
+2)target port > means container ka port jaha application deploy hai jo hum dockerfile me declared karte hai.or pod ke jo pod banate hai to same port likhna hoga
+3)port > service ka port mtlb hai ki sab component ko btata hai ki service ye port par sun raha h.(container port = service ka port by default hota hai.or  make sure ye hai ki target port = docker file me jo port define wo same hona chaiye nhi to application run nhi hogi) by default tcp protocol hota h
+* interview kya loadbalancer type service internal or external ip hoti anser is yes 
+                                 ***ingress & ingress controller**** 
+# most of company loadbalancer type nhi use karti hai ..wo use karti hai ingress or cluster ip type service create karti hai or usko ingress ke piche rakhti hai ise cost bhi bach jata hai or d dos attack bhi hota hai
+architecture {
+              (1)loadbalancer >(2) ingress controller >(3) service (clusterip) >(4)  no off (pod or deployment)
+}
+*ingress jo hai domain or service map or connect karta hai karne k liye k8s me oobject hota hai.
+*Ingress Controller is a component that reads Ingress resources and routes external traffic to the appropriate services inside the cluster.(kis type ka traffice usko us hisab se route karta hai).ingress controller downlload karna padega .
+👉 Ingress = सिर्फ rules (configuration)
+👉 Ingress Controller = असली traffic handle करने वाला engine (अगर हर service के लिए LoadBalancer बनाओगे → expensive
+👉 Ingress → एक LoadBalancer से multiple services handle(अगर हर service के लिए LoadBalancer बनाओगे → expensive
+* jab tum nginx ka ingress controller install karte ho to backend may kya banta hai (routing kart ha l7)
+1)Ingress Controller Pods (download karna hota hai backend me loadbalncer banta hai network passthrough wala)
+2)or loadbalncer create karta hai backend me gcp cloud par
+#what is ingress class name 
+👉 Ingress Class Name ek identifier name hota hai jo batata hai ki konsa  Ingress Controller इस Ingress rule को handle karega (supose multipe company k controller ho skate hai 1 nginx 2 Traefik 3 haporoxy.isliye class name ingress ka declared karna padta h)          
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+day 7 Cert-Manager, Gateway API, Namespaces, TLS
+#certificate ek top reason kisi bhi cluster ko down jane ke liye lekin certificate add karne website url secure hota hai https. (maintance me jub certicate expired hota hai to cluster down jane ka)
+👉 tls (transport layer security https base hai)certificate add karne se server ki identity establish hoti hai .jaise hi hum brwoser me kuch web site open karte hai to browser check karta sahi server se response aa raha hai ya nhi yaha par server ko confirm karte hai sahi server se response aa raha h .isliye website ko secure karne k liye tls certificate add karna padata hai.
+👉 mTLS me client + server dono verify hote hain.basically ye use hota hai jub services appas me baat karti hai to mtls use hota hai.(or gar ek service dusre service se secure communication karne k liye bhi mtls use hota hai)
+#what is lets encrypt
+>Let’s Encrypt ek free Certificate Authority (CA) hai jo websites ko SSL/TLS certificates provide karta hai.(for secure the website ye ca kubernetes ke andar hi rehta hai or phir waha se call jata jo let's encrypt ke server par)
+👉 Isse tumhari website HTTP se HTTPS (secure) ban jaati hai — browser me 🔒 lock dikhta hai.
+#what is cert-manager
+cert-manager Kubernetes ka ek controller/tool hai jo TLS certificates ko automatically manage karta hai.ye kubernetes add on hai.(cert manager ke through hum certificate genrate karenge)
+#cluster issuer ki ek yaml file banani padegi jise in house cluster k andar certificate athority sign hokar milega.
+# certicate add karne me 2 part hote hai
+1.cert manager ke through hum certicate genrate karenge.
+2.or let's encrypt ke through certificate sign hokar ata hai .
+3.ClusterIssuer (basically pure cluster k liye hota hai)> Certificates kaha se lena hai (like Let’s Encrypt), aur kaise generate karna hai”
+4.issuer “Is namespace ke andar certificates kaise generate karne hain” (sirf name space level par hota h)
+**imp production use case h (application as a service run ho rahi lekin ingress k piche jate hi application fat rahi h solution (Can we use another port number instead of 8080 ?. If yes I used the 3000 port number but got this error " err: unacceptable port 3000 for protocol HTTP ") 
+       **** Isssue with ingresss *****
+1.agr mujhe application me kuch changes karna hoga to phir roollout strtegi hoga deployment k hisab se
+2.agar humare pass multiple service run ho rahi h to sabhi team logo ko 1 ingress file par dependent rehna hoga
+3.chije bohot cluterd hai jaise kabhi kisi ko nginx ka controoler use karna kabhi kis or controller to is problem ka solutio hai Gateway api new object type advance version hai ingress controller ka .
+#what is Gateway api .
+1)GatewayClass (already provided by GKE)
+ 👉 This tells: *gke-l7-global-external-managed "Use Google Cloud Load Balancer controller"
+2)gateway responsible for
+1.load balancer
+2.tls
+3.port
+4.internet entry
+3)http routeare responsible for .where trafic will be go
+1.path
+2.backend 
+*what is noisy neighbour > mtlb ki ek pod sare resources consumed kar raha hai .uske wajah se dusre pod ko cpu memory ka problem aa raha hai
+solution pod ko cpu memory dedo fixed Resource Limits & Requests .
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+day 8
+* if u create the name space in gke there are by default 4 name space aleredy created by gke
+1)default >
+2)kube-node-lease > yaha par no of node kitne hai wo dikhta h cluster m cmd > kubectl get lease -n kube-node-lease lease object dikhega .isme koi pod create nhi hota h
+3)kube public me kuch nhi hota h
+4)kube-system . k8s in component service ko run karne k liye reserved hota h.controller ko manage karna scheduler ko  manage karna yahi par sab hota h
+kube-system namespace Kubernetes ka system-level namespace hai
+Yaha par cluster ke core components run hote hain (jo cluster ko chalate hain)
+*what is multitenancy > Multi-tenancy means multiple users/teams (tenants) share the same infrastructure, but their data and workloads stay isolated from each other.
+exp namespaces stg-namespace 2.stg-namespace or ye chij rbac se hum kar skte h particular member hi kis particular namespace me acess kar skta h work kar skta h
+
+*what is cpu 👉 Kubernetes / systems me CPU ko “compressible” resource mana jata hai because:(Agar container ya pod zyada CPU demand karta hai, aur system me CPU kam available hai:)
+➡️ System usko slow kar deta hai (throttle karta hai)
+➡️ Lekin usko kill (band) nahi karta
+🔸 3. Conversion Table (Important 🔥)
+CPU Value  Meaning
+1000m	 1 core
+500m	 0.5 core
+250m	 0.25 core
+100m	 0.1 core
+*what is memory
+🔹 Kubernetes me Memory (RAM)
+
+👉 Kubernetes me memory ko measure karte hain:
+
+Mi (Mebibyte) → 1024 KB
+Gi (Gibibyte) → 1024 MB
+*Memory (RAM) is temporary storage used by running applications, and in Kubernetes it is a non-compressible resource—exceeding limits leads to OOM kill.
+👉 Memory non-compressible resource hai:
+
+Limit cross → 💥 OOMKilled kernal hi process killed karta h(container band)
+CPU jaisa slow nahi hota
+📊 Comparison Table
+Unit	Full Form	Base	Bytes	Used In
+KB	Kilobyte	1000	1,000 bytes	Storage (HDD, SSD)
+MB	Megabyte	1000	1,000,000 bytes	Storage
+GB	Gigabyte	1000	1,000,000,000 bytes	Storage
+KiB	Kibibyte	1024	1,024 bytes	OS / Linux
+MiB	Mebibyte	1024	1,048,576 bytes	Kubernetes / RAM
+GiB	Gibibyte	1024	1,073,741,824 bytes	Kubernetes / RAM
+*what is request or limit _limit range for pod)
+*request or limit dono set karna chaiye nhi to pod pura memory consumed karega to jo dusre pod chal rahe ho oomkileed error ayega sara memory or cpu pod consumed kar leta hai to yahi noisy neigbhour problem hai.
+ Request = minimum resource (CPU/Memory) jo container ko guarantee hota hai
+
+Scheduler isi basis par decide karta hai ki pod kis node par chalega
+Ye hamesha milta hi milta hai ✅
+ Example:
+cpu: 500m → 0.5 CPU guaranteed
+👉 Limit = maximum resource jo container use kar sakta hai
+
+Isse zyada use nahi kar sakta ❌
+example
+resources:
+  requests: #limits se jyda nhi hona chaie request to nhi chalega pod
+    cpu: "500m"
+    memory: "256Mi" (storage hota hai mtlb memory ka)
+  limits:
+    cpu: "1"
+    memory: "512Mi"
+* or ye jo scheduler backend par karta h kitni memory chaiye kitni cpu chaiye
+@ importent kabhi bhi cpu ki limit defined nhi karni hai or memory ki request or limit humesha equal rakhni ye production levl hai .
+*QOS (quelatiy of service) QoS (Quality of Service) Kubernetes ka ek concept hai jo decide karta hai ki memory pressure ya resource shortage ke time kaunsa pod pehle kill hoga aur kaunsa safe rahega.
+1. Guaranteed
+Sabse last me kill hota hai (isme cpu or memory ki dono defined hota hai or limit or request ki memory or cpu same definde hai to ye jata gurated qos me)
+Production critical apps ke liye best
+resources:
+  requests:
+    memory: "512Mi"
+    cpu: "1"
+  limits:
+    memory: "512Mi"
+    cpu: "1"
+2. Burstable (medium priority) (isme sirf 
+Guaranteed ke baad kill hota hai
+resources:
+  requests:
+    memory: "256Mi"
+  limits:
+    memory: "512Mi"
+3. BestEffort(no request limit defined)
+Sabse pehle kill hota hai
+🧠 Interview / Notes Line priority of pods k liye use hota hai kis ki piority jyda hai wo last me kill hota h
+QoS defines pod priority during resource pressure
+Based on requests & limits
+3 classes: Guaranteed, Burstable, BestEffort
+Guaranteed = safest, BestEffort = most risky
+#IMP topic cost optimization
+*ResourceQueta namespace par apply hota hai(👉 Namespace ke andar resources (CPU, Memory, Pods, etc.) ka limit set karna — taki koi ek team/app sab kuch consume na kar le.)
+Total CPU request → max 2 cores
+Total Memory request → max 4GB
+Total Pods → max 10 is se jyda is name space me nhi kar skte h.
+*supose is name space me hum ye bhi defined kar skte hai 10 sceret se jyda create na ho to ye bhi kar skte h.
+👉 Agar limit cross hui → Kubernetes resource create nahi karega
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: my-quota
+  namespace: demo
+spec:
+  hard: #(soft bhi laga skte h)
+    requests.cpu: "2"
+    requests.memory: 4Gi
+    limits.cpu: "4"
+    limits.memory: 8Gi
+    pods: "10"
+#cost optimization
+>open cost  ek tool hai (OpenCost ek tool hai jo Kubernetes cost optimization ke liye use hota hai.)
+OpenCost ek open-source cost monitoring tool hai jo batata hai:
+
+Kaunsa pod / namespace kitna cost le raha hai
+CPU aur memory ka kitna usage ho raha hai
+Kis workload me waste ho raha hai (over-provisioning)
+Daily / monthly cluster cost breakdown
+2. Namespace-wise cost
+Kaunsa team ya project zyada cost kar raha hai
+👉 Tum tracking + budgeting easily kar sakte ho
+*Taints & Tolerations Kubernetes ka ek powerful scheduling concept hai 👍
+Ye control karta hai ki kaunse pods kaunse nodes par run kar sakte hain.
+👉 Taint (Node par lagta hai) = “Ye node sabke liye nahi hai 🚫”
+👉 Toleration (Pod me hota hai) = “Mujhe allowed hai is node par run karna ✅”
+👉 kubectl taint node <new=tc:noscheduule>
+*phir jub hum pod par toleration lagayenge to hume add karna hoga <new=noschedule>likhna hota h yaml file me likhna hota h
+*agarhum sab node par taint add kar denge or pod par toleration add nhi karenge to pod schedule bhi nhi hoga. wo pending state me chala jayega
+#NodeName aur NodeSelector dono Kubernetes me use hote hain pod ko specific node par schedule karne ke liye, lekin dono ka behavior alag hai 👍
+*NodeName kya hota hai? 👉 Directly pod ko ek specific node par bind karta hai
+interview >Scheduler bypass kaise ho jata hai ❌
+Pod sirf usi node par run karega
+Agar node available nahi → pod pending ❌
+🔍 2. NodeSelector kya hota hai?
+
+👉 Labels ke basis par node choose karta hai
+
+spec:
+  nodeSelector:
+    disktype: ssd
+💡 Key Points:
+Scheduler use hota hai ✅
+Jo node label match karega → pod waha run hoga
+Flexible & recommended approach 👍
+#Topology Spread Constraints kya hota hai?👉 Ye Kubernetes feature hai jo pods ko evenly distribute (spread) karta hai across nodes / zones.
+🧠 Easy Example
+
+Maan lo:
+
+Tumhare paas 3 nodes hain
+Aur 6 pods hain
+
+👉 Without constraint:
+
+Sab 6 pods ek hi node par aa sakte hain ❌
+
+👉 With topology spread:
+
+Har node par ~2 pods distribute honge ✅
+yaml file
+topologySpreadConstraints:
+- maxSkew: 1
+  topologyKey: "kubernetes.io/hostname"
+  whenUnsatisfiable: DoNotSchedule
+  labelSelector:
+    matchLabels:
+      app: my-app
+Affinity aur Anti-Affinity Kubernetes me use hote hain pod placement control karne ke liye 👍
+👉 Matlab: “Pod kahan run hona chahiye ya kahan nahi hona chahiye” supose mera purana pod name=tcs node par run ho raha hai run ho raha hai to afinity agar hoga to pod wahi run hona chaiye or iska oposite antiafentiy hai.
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+day_9
+🔐 1. Authentication (AuthN) kya hota hai? kube-api server manage karta hai
+System check karta hai ki user valid hai ya nahi.
+Username + Password
+Token (API key, JWT)
+Certificate (Kubernetes me common)
+⚙️ Kubernetes me
+kube-apiserver check karta hai:
+user ka token / certificate
+👉 Agar valid hai → access next step pe jayega
+🔑 2. Authorization (AuthZ) kya hota hai? bhi kube-api server hi manage karta h.
+💡 Examples:
+Pod create kar sakta hai?
+Namespace delete kar sakta hai?
+Sirf read access hai ya full access?
+⚙️ Kubernetes me
+
+👉 Mostly use hota hai:
+
+RBAC (Role-Based Access Control)
+
+Example:
+
+Dev user → sirf pods dekh sakta hai 👀
+Admin → sab kuch kar sakta hai 🔥
+
+👉 “Tum kya kar sakte ho?” decide karna
+
+🧠 Simple:
+
+Permission check hoti hai
+#GKE me user management direct Kubernetes jaise “user create” se nahi hota ❌
+👉 Ye Google Cloud IAM + Kubernetes RBAC ke combination se hota hai 👍
+🔐 GKE me User Management kaise hota hai?
+🧠 2 Layer Security Model
+1. IAM (Identity & Access Management) – Authentication
+
+👉 Decide karta hai kaun cluster access kar sakta hai
+
+Google account / service account use hota hai
+IAM role assign karte ho
+💡 Example Roles:
+roles/container.admin → full access
+roles/container.developer → limited access
+roles/container.viewer → sirf read
+2. RBAC (Kubernetes) – Authorization
+
+👉 Decide karta hai user cluster ke andar kya kar sakta hai
+
+Role / ClusterRole
+RoleBinding / ClusterRoleBinding
+🔄 Complete Flow
+User login (Google account)
+IAM check → allowed?
+RBAC check → kya kar sakta hai?
+Action allow / deny
+*jub bhi user command type karta hai
+example > kubectl apply -f pod.yaml to sabse phele kubeconfig file me sab hota hai apko cluster me pod create kar skte hi na ye waha entry hui hoti h.✔️ tum sirf utna hi kar sakte ho jitni permission di gayi hai
+#👉 kubeconfig ek configuration file hoti hai jo kubectl ko batati hai ki Kubernetes cluster se kaise connect karna hai.
+👉 Isme hota hai:
+
+Cluster ka address (API server)
+User credentials (authentication)
+Context (kaunsa user + kaunsa cluster use ho raha hai)
+⚠️ Important line (interview me impress karegi)
+
+👉 kubeconfig sirf connection aur authentication handle karta hai, authorization (permission) RBAC decide karta hai.
+*Jab hum kubectl command run karte hain, wo kubeconfig file read karke cluster se connect karta hai.
+path > ~/.kube/config pwd > /root/.kube ls
+#Authentication hum k8s me 5 tarike se kar skte hai
+1)webhook 
+2)static token
+3)open id connect
+4)custom
+5)x 509 create
+#what is ervice account 
+👉 “Service Account ka use machines (applications) केke liye hota h takibina user k user login ke system सcommunicate kar ske”(like aws me hum i am user banate h jab terraform k liye banate h
+## Kubectl Config File (Kubeconfig) Kya Hai?
+Kubeconfig ek configuration file hai jo kubectl (Kubernetes command-line tool) ko batati hai ki kaunsa cluster hai, kaunsi user credentials use karni hain, aur kaunsa context (namespace + cluster + user) active hai.
+
+Simple words mein: Ye woh file hai jisse kubectl pahchanta hai ki "main kis Kubernetes cluster se baat kar raha hoon aur kiski permission se"
+Isme 3 Main Cheezein Hoti Hain:
+Component	Kya Hai?
+Clusters	Cluster ka URL/endpoint (jaise https://192.168.1.100:6443) aur uska CA certificate
+Users	User credentials (jaise client certificate, token, ya username/password)
+Contexts	Cluster + User + Namespace ka combination (jaise "production-admin" context)
+*hum serviec account create karke bhi use hum context me dal skte hai (service account like aws me kisi ko role dete hai permssion dekar like terraform user banke use infra create karte h)
+step > 
+1)kubectl create service account (cluster name >yasin123-day9)
+2)TOKEN = {(kubectl create token yasin123-day9) hum token create karte hai
+*ye hum command line se bana rahe hai ise hum iam se bana skte h >kubectl get current-context
+3)ab service account ko or token ko current context me dalte h >kubectl config set=credentials yasin123-day9==toke=$TOKEN
+4)kubectl config set-context devolper=user=context --cluster=day9(cluster name) --user=yasin123-day9
+5)kubectl config use-context devolper user-context >k8s hum btayenge tu ab ye context use kar
+*ab humne service account bangya or context me bh dal diya h lekin ise permission dena hai k user or service account ko kis chij ki pemission dena hai wo hum RBAC se denege
+
+#By default k8s me authorization ke mod hote hai.
+1)allways deny
+2)allway allow
+3)ABAC/RBAC
+*cd /etc/kubernetes/mainifests. is path par humare jitne bhi master k componenet ki yaml file hoti h.or authentication or authorization humesa api server me hota hai to hum check kar skte is path par api server ki file hai
+cat kube-apiserver me > authorization mode check karo .  (- --authorization-mode=Node,RBAC)is jagha hum allway deny,allways allow,abac,rbac dal skte h.
+#imp RBAC types
+1)cluster role (cluster par applied hota hai. cluster role ko hum role binding or cluster role binding ke sath use kar skte ho)
+2)role (name space level par. rle ko hum sirf rloe-binding ke sath use kar skte h)
+2)role-binding (name space level par applied hoti h)
+4)cluster role-binding (cluster level par applied hoti h pure clustre par)
+# VOLUMES (Kubernetes me Volume kya hai?
+Volume ek storage mechanism hai jo Pod ke containers ko data store aur share karne ke liye use hota hai.
+Normally container ka filesystem temporary hota hai. Agar container delete/recreate ho jaye, to uska data lose ho sakta hai. Volume use karke hum data ko container ke lifecycle se alag rakh sakte hain.)
+“A Volume in Kubernetes provides persistent or shared storage to containers inside a Pod. It allows data to survive container restarts and can be backed by different storage types like EBS, Persistent Disk, NFS, or emptyDir.”
+*types of volume 
+1)emptyDir → Pod lifetime tak storage ye pod ke anadar hi create hota h.(Kubernetes mein EmptyDir (emptyDir) ek volume type hai. Iska matlab hai:
+Pod start hone par ek empty directory create hoti hai, jise Pod ke containers share kar sakte hain.)
+2)hostPath → Node ke local filesystem ka storage host par banta h.
+3)PersistentVolume (PV) → Cluster-level persistent storage
+4)PersistentVolumeClaim (PVC) → Pod/application ki storage request
+*aws , azure ,gcp ke sare disck depricated hai csi driver ke upar implement hua hai volume after the 1.30
+*Kubernetes v1.30 ke around in-tree cloud storage volume plugins ko remove/deprecate karne ka process complete ho chuka tha. AWS, Azure aur GCP ke cloud disk integrations ab CSI (Container Storage Interface) drivers ke through use kiye jaate hain.
+Examples:CSI driver ka use karke hi cloud me storage banta hai jaise hum >load balancer bante hai kisi service ko expose karne k liye 
+
+Cloud	CSI Driver	Storage
+AWS	EBS CSI Driver	Amazon EBS
+Azure	Azure Disk CSI Driver	Azure Managed Disk
+GCP	PD CSI Driver	Google Persistent Disk
+Interview line
+
+“In Kubernetes, the old in-tree cloud storage plugins have been migrated to CSI drivers. For AWS, Azure, and GCP, cloud block storage is now provisioned and managed through their respective CSI drivers.”
+
+Important: AWS EBS, Azure Managed Disks, aur GCP Persistent Disks deprecated nahi hain. Old in-tree Kubernetes volume plugins deprecated/removed hue hain; CSI drivers unka replacement hain.
+abhi persistent vlume use hot hai(mtlb jo bhi vloume hum banyenge wo csi driver k upar banyenge phele hum direct attch karte the ens,gcp disck)
+1)1. Static Provisioning
+Admin pehle se PV create karta hai, aur user/application PVC create karke us PV ko claim karta hai.(mtlb ki gar supose mere pod ko 10 gb ka volume chiayeto phele se k8s admin pv banakr rakhta hai or pvc ke through use attach kar dete h)
+2. Dynamic Provisioning (dynamic me agar supose hume chaiye 50gb ka volume or cluster me available nhi h to khud new volume create kar leta hai or pvc ke through use karta h)
+Admin manually PV create nahi karta. User PVC create karta hai, aur Kubernetes StorageClass + CSI Driver ke through automatically PV/storage provision karta hai.
+persistent volume 1)provising >claim > use
+PersistentVolume (PV) Kubernetes cluster ka resource hota hai. Lekin ek important distinction hai:
+
+PV → Kubernetes cluster ke andar create hota hai.
+Actual storage/disk → storage provider par hota hai, jaise AWS EBS, GCP Persistent Disk, Azure Managed Disk.
+CSI Driver → Kubernetes ke PV ko actual cloud storage se connect/provision karta hai.
+Dynamic provisioning example
+PVC
+ ↓
+StorageClass
+ ↓
+CSI Driver
+ ↓
+AWS EBS / GCP Disk / Azure Disk
+ ↓
+PV
+ ↓
+Pod
+*types of mod
+RWO → 1 Node → Read + Write (mtlb ki 1 hi pod isko acess kar payega)
+ROX → Many Nodes → Read Only many(multiple pod raed kar skte hai volume ko)
+RWX → Many Nodes → Read + write + many (multiple pod read or write operation kar paynge)
+------------
+Option 1 — Recommended: Dynamic PV
+
+Isme aap PV YAML manually nahi banate.
+
+storageclass.yaml
+
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: gcp-pd-storage
+provisioner: pd.csi.storage.gke.io
+volumeBindingMode: WaitForFirstConsumer
+reclaimPolicy: Retain
+parameters:
+  type: pd-balanced
+---------------------------
+pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: gcp-pd-storage
+  resources:
+    requests:
+      storage: 10Gi
+-------------------------------------------------------------
+option:2 static provisning
+
+storageclass.yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: gcp-pd-static
+provisioner: pd.csi.storage.gke.io
+volumeBindingMode: WaitForFirstConsumer
+reclaimPolicy: Retain
+pv.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: my-pv
+spec:
+  capacity:
+    storage: 10Gi
+
+
+  accessModes:
+    - ReadWriteOnce
+
+
+  persistentVolumeReclaimPolicy: Retain #(mtlb ki pvc  dlete hone par pv dlete nhi hota h)
+                                 #delete (to pod delete hone par volume bhi delete hoga .) 
+
+  storageClassName: gcp-pd-static
+
+
+  csi:
+    driver: pd.csi.storage.gke.io
+    volumeHandle: projects/YOUR_PROJECT_ID/zones/asia-south1-a/disks/my-gcp-disk
+
+YOUR_PROJECT_ID ko apne actual GCP project ID se replace karna hai.
+
+pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+
+
+  storageClassName: gcp-pd-static (ye gcp ka storage ka plugin hai to us type ka sttorage banyega)
+
+
+  resources:
+    requests:
+      storage: 10Gi
+
+#storageClass ye jarur check karlo bana hai ya nhi gcp ka storage ka plugin hai to us type ka sttorage banyega(atlab aapke cluster me StorageClass already bani hui hai.
+Is case me aapko nayi StorageClass banane ki zarurat nahi hai. Direct PVC me: nhi to banani padegi deppend on cluster cmd> kubectl get c se check karlo
+StorageClass provides a way to define different classes of storage and enables dynamic provisioning of PersistentVolumes based on PVC requests.
+--------------------------------------------------
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: local-path
+provisioner: gcp-pd-static
+volumeBindingMode: WaitForFirstConsumer (jub tk pod nhi ban raha jub tk pv na bane.lekin pvc bn jata h)or immidate bhi hota jaise hi apka pvc bana to pv bhi bn jayega
+reclaimPolicy: Delete
+------------------------------------------------------------------------------------------------------------
+IAM controls who can access Google Cloud/GKE resources, while Kubernetes RBAC controls what that authenticated user can do inside the Kubernetes cluster.
+#RBAC (role base acces control.RBAC in Kubernetes is an authorization mechanism that controls access to Kubernetes resources based on roles and permissions.)
+1)role (Role me hum define krte hai ki user/service account kon se Kubernetes resources par kya action kar skta h ।)
+*or role hum iam service se banate hai or service account bhi
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: pod-reader
+  namespace: dev
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list", "watch"]
+*lekin abhi permission mili nhi hai sirf role create hua . role binding se hum denge kisi user ko
+ @role binding mtlb jo role banye hai wo kis user ko deni h.or service account ko (RoleBinding kisi User, Group ya ServiceAccount ko Role se connect karta h)
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: pod-reader-binding
+  namespace: dev
+subjects:
+- kind: ServiceAccount
+  name: dev-sa
+  namespace: dev
+
+roleRef:
+  kind: Role
+  name: pod-reader
+  apiGroup: rbac.authorization.k8s.io
+* or agar terminal par hi check kr skte h jis user ko role assign hui wo kya kr skta h 
+cmd > kubectl auth can-i get pod --as yasin-dev (get verb,create )
+
+*ClusterRole
+@ > ClusterRole Kubernetes RBAC ka ek object hai jo permissions define karta hai, lekin Role ke comparison mein iska scope cluster-wide ho sakta hai.pure cluster k liye hota h.ClusterRoleBinding ya RoleBinding dono ke saath use ho sakta hai
+ ** cluster role bindin ko cluster-role ke attach karne k liye cluster role me hi user ki details hoti h konse user ko cluster rrole dena h.
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: node-reader-binding
+
+subjects:
+- kind: User
+  name: yasin
+  apiGroup: rbac.authorization.k8s.io
+
+roleRef:
+  kind: ClusterRole
+  name: node-reader
+  apiGroup: rbac.authorization.k8s.io
+cmd to check > kubectl auth can-i get nodes --as yasin 
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+day:10
+#configmap 
+ConfigMap — Interview Answer
+
+ConfigMap is a Kubernetes object used to store non-sensitive configuration data separately from the application code and container image.
+
+It allows us to pass configuration to Pods as environment variables, command-line arguments, or mounted files.
+
+Why do we use ConfigMap?
+To separate configuration from application code.
+To avoid hardcoding configuration inside Docker images or Deployment YAML.
+To use the same application image across Dev, Staging, and Production with different configurations.
+To centrally manage application configuration.
+To update configuration without rebuilding the Docker image.
+#An immutable ConfigMap is a ConfigMap whose data cannot be modified after creation.
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+immutable: true
+
+data:                           #(data me hi url or non confidential chije rakhna h.like databade url)
+  APP_ENV: "production"         #key value hota hai like
+  LOG_LEVEL: "info"
+
+
+# ConfigMap can be used through a volume. In this case, ConfigMap data is mounted inside the container as files.
+*best tarika yahi through the volume 
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+
+data:
+  application.properties: |
+    APP_ENV=production
+    LOG_LEVEL=info
+    DB_HOST=mysql-service
+--------------------------------------
+apiVersion: v1
+kind: Pod
+metadata:
+  name: myapp
+spec:
+  containers:
+    - name: app
+      image: nginx
+
+      volumeMounts:
+        - name: config-volume
+          mountPath: /etc/app
+          raedOnly: true (ye imp kuch melis attack to hacker volume read kr skte h write nhi kr skte)
+
+  volumes:
+    - name: config-volume
+      configMap:
+        name: app-config
+
+------------------------------------------
+#secrets Secret is a Kubernetes object used to store sensitive information separately from application code and configuration.
+
+Examples:
+
+Passwords
+API tokens
+SSH keys
+TLS certificates
+Database credentials
+Cloud credentials
+
+#Common Use Cases
+1)Database credentials
+DB_USERNAME=admin
+DB_PASSWORD=password123
+API keys / tokens
+AWS_ACCESS_KEY
+API_TOKEN
+2)Docker registry credentials
+
+Used when a private Docker image needs to be pulled:
+
+imagePullSecrets:
+  - name: docker-secret
+3)TLS certificates
+
+Store:
+
+tls.crt
+tls.key
+
+and use them for HTTPS/TLS.
+
+4)SSH keys
+
+For applications that need SSH authentication.
+
+Application credentials
+
+Types of Kubernetes Secrets
+
+Kubernetes provides several built-in Secret types:
+
+Type	Use case
+Opaque	                                Generic secrets like passwords, API keys, tokens
+kubernetes.io/tls	                TLS certificate and private key
+kubernetes.io/dockerconfigjson	        Docker/OCI private registry credentials
+kubernetes.io/basic-auth	        Basic authentication username/password
+kubernetes.io/ssh-auth	                SSH private key
+kubernetes.io/service-account-token	ServiceAccount token
+#secret ko bhi use jyda acha h dat volume ke through hi hai.
+#lekin kubernetes ka secret koi nhi use karta because wo encrypt nhi rehta ha.
+1)sealed secret use by 60% of company use . in market but sealed secret cluster me h store kr skte h
+sealed secret aisa hai public or private key wala concept hai .gar scret cluster k baharjata hai to .wo decrypt nhi hoga wo sirf cluster me hi decrypt hoga.
+ 1.first bitnami ka operator download karna hoga.to waise hi controller download ho jayega
+2.
+2)external secret operator 90% ye hi use karti h abhi company. like cluster ke bahar out source hota hai.
+External Secrets Operator (ESO) Kubernetes ka ek operator hai jo external secret management systems se secrets lekar Kubernetes ke andar automatically Kubernetes Secret create/update karta hai.
+For example, secret ko Kubernetes YAML me directly store karne ke bajay aap secret ko:
+1)(ye cloud me hai ,ye deiffrent cloud se pull kar skta haws secert manager,gcp secret manager) >(2 > secret store > 3 external secret.this is inside the cluster) 
+AWS Secrets Manager
+AWS Parameter Store
+HashiCorp Vault
+Google Secret Manager
+Azure Key Vault
+#1)working aisa hai cluster me scret store create hota hai.
+ 2)scret store regular interwal par jo bhi humne cloud par secret ko store kiya  use heat karta rehta h.time hum defined karte h 5 min yajyada
+ 3)phir cluster me hi external secret hum banate h.wo secret store se pull karta hai.external scret me scret store hota h.
+--------------------------------------------------------
+*scret store banane ke bhot tarika h
+1)iam servic par jao phie service account par jao service account create karo.or permission deni hai > secret manager secret accesser.
+2)key par jao or key banani h json format ki.phir cluster me ek secretbanan h .yaml ke through
+*scret.yam
+apiVersion: v1
+kind: Secret
+metadata:
+  name: gcp-secret
+  namespace: default
+type: Opaque
+
+data:
+  credentials.json: (yaha par key jo download kiye hai use pate karna h)
+--------------------------------------------------------------------------------------------------------
+Service Mesh kya hai?
+
+Service Mesh ek dedicated infrastructure layer hai jo microservices ke beech hone wali service-to-service communication ko manage karta hai.
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  Day11 |Monitoring, Logging, Tracing, Profiling  | Prometheus, Jaeger, OTel, Grafana, eBPF
+
+*Kubernetes monitoring is the process of continuously tracking the health, performance, and resource utilization of Kubernetes components, nodes, pods, and applications.
+1)infra level monitoring (tum cloud base cluster may master node k component ko acess nhi kar skte ho)
+port kind or without cloud cluster api-server 6443 port pr run hota h .ETCD 2399 .controler-manger 10257 or  run hota h by default metrics ko expose karta h)
+*1 .konsa metrics benificial hai k8s me >RTT (ek request bhjne par return infom karne me jitna time lgta h use rtt khte h)
+* 2. que ki depth 3 . cpu total (ye chije hume save karni h metrics) 4. by default worker node k component k metrics port pr 10250 pr expose hue hote h)
+* worker node k metrics ko fetch karte
+1 .kubelet-running-pods 2.kubelet-running-container 3.kubelet-pod-start-duration-second-count
+*GKE me by default fluntd hi install hota h
+
+*master node
+1)api-server
+2)Etcd
+3)scheduler
+4)controller-manager
+*worker node
+2)application level montioring
+
+_______________________________________________________________________________________________________________________________
+interview question k8s
+1)how would you trubleshoot a kubernetes cluster if the API_server is down.
+1)verify API server Reachebility
+2)SSH into control plane node
+3)verify kube-apiserver logs
+4)verify static pod manifest2
+6)check ETCD health
+7)verify kubelete service
+8)check container run time
+9)check certificate expiry
+10)check resource exhcution
+# 2.how would you handle a kubernetes node in not raedy state.(agr 8s me koi bhi node note ready state me gya to kaise handle karog)
+1)verify node status
+2)verify kubelet health
+3)check container runtime
+4)check resource pressure
+5)verify node-to-control plane connectivity
+6)check node events
+7)cordon and drain node (production best practice)
+#3) how do u isolate multiple team within a single kubernetes cluster without creating seprate cluster ?
+ans > To isolate multiple team with in single kubernetes cluster , we use a combination of NameSpace ,RBAC,ResourceQueta,and Network PLolicies
+4.#why would you choose the kubernetes hard awy instead of using kubeadm ?
+ans > ✅ The real purpose of Kubernetes The Hard Way
+✅ When to use The Hard Way vs kubeadm
+✅ Which approach is recommended for production
+✅ How this question is answered in DevOps & Kubernetes interviews
+✅ Practical explanation from a real-world perspective
+
+5. # how will you troubleshoot a pod stuck in crashloopbackoff in production environment ?
+ans > when a pods  is in crashloopbackoff , i follow a structured troubleshooting approach-starting with pod events, logs,previous logs,resource issue, configs, node health, and deployment history to identify the root cause and minimize production impact.
+1)OOMkiled
+2)image pull error
+3)probs failures
+4)mount issues
+5)Scheduling problem (node me taint h resource nhi rsetriction h)
+6.#IF a deployment/Replicaset has 4 running pod and you scale it down, how does kubernetes decide which pod to terminate first?
+ans >when adeployment or repliccaset is scaled down kubernetes does not randomly delete pods , intead, it follows an internal ranking logic to determine which pod scheduld be terminated first.
+✅ Unhealthy / NotReady Pod Deletion (koi 1 pod ready nhi ho pya or unhealth state me h usko bahr kardega)
+✅ Pod Deletion Cost (`pod-deletion-cost`)
+✅ Node Balancing Logic
+✅ Creation Order & Internal Ranking
+✅ Real Kubernetes Scale Down Behavior
+7.#how does kubernetes service networking work internally ?
