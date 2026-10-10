@@ -1,4 +1,4 @@
-                                         **** YAML ****
+this is persona;                                         **** YAML ****
 # what is YAML (“YAML Ain’t Markup Language.”) ?
 
 > YAML stands for “YAML Ain’t Markup Language.” its human redable thats why we using (json can also we be use in k8s).we use camel casing in k8s (aA) manifest file .It is a human-readable.
