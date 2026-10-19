@@ -18,9 +18,12 @@
 (4)tcpdump It is used to capture and analyze network traffic (packets) in real time. (tcpdump -C 10 > 1.txt )only 10 packet will be captured)
 (5)crictl is a command-line tool that use communicates directly with the Kubernetes container runtime like containerd (cmd > crictl ps -a :its give the container id which is run on pod)
 (6) journalctl is a command to view system and service logs on Linux using systemd.(journalctl Linux me systemd ke logs dekhne ke liye use hota hai. systemd hi sari service run karta hai linux me :path /etc/systemd me stored hota h)
-  > journalct --no-pager > logs.txt or journalctl --since-yesterday -o json-pretty. he gives the log of the system from yesterday
+  > journalct --no-pager > logs.txt or journalctl --since-yesterday -o json-pretty. he gives the log of the system from yesterday  
+(7)ps aux |grep nginx (container process id dekh skte h)
+(8)lsns  lsns -p 5134 (container name space dekh skte h)
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-                             **** Kubernetes Architecture **** 
+                             
+                              **** Kubernetes Architecture **** 
 # what is api (An API is a set of rules that allows two applications to communicate with each other.)
 # HTTP/1.1 is a web protocol that allows browsers and servers to communicate and transfer data over the internet. (json/xml)
 # gRPC is a high-performance framework for fast communication between microservices using HTTP/2. (in kubernetes evry protcol talk in grpc exp api-server to communicate with etcd and we talk with api-server in rest protocol)
