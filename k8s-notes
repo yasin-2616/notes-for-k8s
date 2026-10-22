@@ -116,6 +116,41 @@ cmd
 (12) kubectl debug pod1 -it --image=nginx --targer=pod1. (add ephimeral container )
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 day4 #tool
+Dive tool kya hai? Complete DevOps explanation
+Dive ek Docker/OCI container image analysis tool hai. Iska main kaam container image ke andar ki layers, files, image size aur space usage ko inspect karna hai, taaki aap samajh sako ki image unnecessarily badi kyun hai aur use optimize kaise karna hai.
+
+Aap DevOps aur DevSecOps seekh rahe ho, isliye Dive ko Docker image build hone ke baad aur Kubernetes mein deploy karne se pehle use karna samajhna useful hai.
+1. Dive kis kaam aata hai?
+1. Image layers inspect karna
+Dockerfile ke har RUN, COPY ya ADD jaise instruction se bani layers aur unmein changes ko samajhne mein help karta hai.
+
+2. Image size optimize karna
+
+Dekh sakte ho ki kaunsi files aur layers image ka size badha rahi hain, aur kin changes se space waste ho sakti hai.
+
+3. Unnecessary files identify karna
+
+Build tools, temporary files, caches aur doosri unnecessary files image mein include ho gayi hain ya nahi, ye investigate kar sakte ho.
+
+2. Docker image layers kaise kaam karti hain?
+Maan lo aapka Dockerfile ye hai:
+FROM ubuntu:24.04
+
+RUN apt-get update
+
+RUN apt-get install -y curl
+
+RUN apt-get clean
+
+Isko build karne par multiple filesystem layers ban sakti hain. Dive aapko in layers ke contents aur changes dikhayega. 
+
+Ab ek important problem dekho:
+FROM ubuntu:24.04
+
+RUN apt-get update && \
+    apt-get install -y curl && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 #what is trivy its part of security(👉 Trivy is an open-source security scanning tool used to detect vulnerabilities, misconfigurations, and secrets in container images, file systems, and Kubernetes environments.")
 (1)trivy image hello-world --severity CRITICAL
 🔐 What is Kyverno? (👉Kyverno is a policy management tool for Kubernetes that helps you control, validate, and secure your cluster using rules (policies).
