@@ -989,3 +989,7 @@ path cat ~/.kube/config (jo bhi user banate hai wo is path me context file may s
 1)cluster ki details (konsa cluster hai name)
 2)user (konsa user hai client certificate or key use kar raha hai cluster se interact karne k liye (credential basicaly)
 3)context (context may hota hai konsa user kon se cluster se baat karega or kya permission like sirf ye pod ko get kar skta hai ya create pa bhi kar skta hai
+* how to see context >  kubectl view context
+*current context > kubectl config get-contexts
+CURRENT   NAME                          CLUSTER      AUTHINFO           NAMESPACE
+*         kubernetes-admin@kubernetes   kubernetes   kubernetes-admin   
