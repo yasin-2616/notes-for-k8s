@@ -983,3 +983,9 @@ ans >when adeployment or repliccaset is scaled down kubernetes does not randomly
 ✅ Creation Order & Internal Ranking
 ✅ Real Kubernetes Scale Down Behavior
 7.#how does kubernetes service networking work internally ?
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#how to create user in kubernetes cluster 
+path cat ~/.kube/config (jo bhi user banate hai wo is path me context file may save hota hai)
+1)cluster ki details (konsa cluster hai name)
+2)user (konsa user hai client certificate or key use kar raha hai cluster se interact karne k liye (credential basicaly)
+3)context (context may hota hai konsa user kon se cluster se baat karega or kya permission like sirf ye pod ko get kar skta hai ya create pa bhi kar skta hai
