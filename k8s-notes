@@ -993,3 +993,4 @@ path cat ~/.kube/config (jo bhi user banate hai wo is path me context file may s
 *current context > kubectl config get-contexts
 CURRENT   NAME                          CLUSTER      AUTHINFO           NAMESPACE
 *         kubernetes-admin@kubernetes   kubernetes   kubernetes-admin   
+*kubectx ek tool hai jise context ko switch kar skte ho (jub company me bohot sare cluster or bohot sare user or context hote hai to multiple cluster ke multiple config file hote hai unko manage karna hota hai)
