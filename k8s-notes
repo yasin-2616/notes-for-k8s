@@ -938,8 +938,21 @@ port kind or without cloud cluster api-server 6443 port pr run hota h .ETCD 2399
 4)controller-manager
 *worker node
 2)application level montioring
-
-_______________________________________________________________________________________________________________________________
+_________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
+ ### Kubernetes PDB (Pod Disruption Budget)
+Pod Disruption Budget (PDB) Kubernetes ki ek feature hai jo ensure karti hai ki maintenance ya voluntary disruptions ke time application ke minimum required Pods available rahein.
+Simple language mein: Agar tumhare application ke 5 Pods hain, toh tum PDB ke through ensure kar sakte ho ki maintenance ke time kam se kam 3 Pods running rahen.
+> Agar node maintenance ke liye 2 Pods ko remove karna hai, toh PDB ensure karega ki minimum 3 Pods available rahen.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: nginx-pdb
+spec:
+  minAvailable: 3
+  selector:
+    matchLabels:
+      app: nginx
+______________________________________________________________________________________________________________________________
 interview question k8s
 1)how would you trubleshoot a kubernetes cluster if the API_server is down.
 1)verify API server Reachebility
